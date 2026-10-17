@@ -18,6 +18,7 @@ A separate development line based on [Mash ∞ Loop](https://github.com/lvt1693/
 - Imported the upstream source files and retained the upstream README as `UPSTREAM_README.md`.
 - Added `GET /health` and `GET /api/health` for platform liveness checks. Responses are JSON and intentionally avoid exposing filesystem paths or secrets.
 - Added `tools/test_health.py` to verify that both routes are registered and the payload stays minimal.
+- Added GitHub Actions static checks for Python syntax, browser JavaScript module syntax, and deployment shell scripts.
 
 The health endpoint is a **liveness** check; it does not claim that model downloads, audio analysis workers, or external source providers are all healthy.
 
