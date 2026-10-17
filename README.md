@@ -1,41 +1,50 @@
 # MashLoop Ultra
 
-> A community-derived enhancement track for Mash ∞ Loop. The goal is to preserve the original music-analysis and continuous-mixing engine while adding better playback reliability, library management, accessibility, observability, and test coverage.
+A separate development line based on [Mash ∞ Loop](https://github.com/lvt1693/mashloop). It preserves the upstream music-analysis, infinite-loop, and cross-track DJ-mixing engine while adding reliability and usability improvements incrementally.
 
-## Upstream and attribution
+**Upstream attribution:** the original project and its MIT license are preserved. The original documentation is available in [UPSTREAM_README.md](UPSTREAM_README.md). This repository is not the upstream project and does not modify it.
 
-- Upstream project: https://github.com/lvt1693/mashloop
-- Upstream demo: https://mashloop.truclv.com
-- The upstream project includes an MIT license. Preserve upstream attribution and the original `LICENSE` when distributing derived versions.
-- This repository is a separate development line. Changes here do not modify the upstream repository.
+## What is in this repository
 
-## Development principles
+- Original Python analysis pipeline, beat/key/mood and phrase-structure analysis, transition search, and worker orchestration.
+- Original FastAPI server, track/source ingestion, session handling, and audio streaming.
+- Original web player, visualization, UI styles, and time-stretching vendor module.
+- Original test/evaluation utilities and deployment scripts.
+- A new JSON liveness endpoint at `/health` and `/api/health`, plus a small standard-library test.
 
-1. Keep the original playback and analysis flow working before refactoring.
-2. Make upgrades incremental and feature-flagged where appropriate.
-3. Do not claim audio-quality improvements until they have automated tests and listening/evaluation results.
-4. Do not bypass copyright controls, login requirements, paywalls, or source-platform restrictions.
-5. Keep secrets, downloaded audio, caches, and personal session data out of Git.
+## New changes in Ultra
 
-## Planned upgrade roadmap
+### 0.1.0 — Baseline import + health check
+- Imported the upstream source files and retained the upstream README as `UPSTREAM_README.md`.
+- Added `GET /health` and `GET /api/health` for platform liveness checks. Responses are JSON and intentionally avoid exposing filesystem paths or secrets.
+- Added `tools/test_health.py` to verify that both routes are registered and the payload stays minimal.
 
-- [ ] Establish an upstream-compatible baseline and verify local startup.
-- [ ] Add repeatable smoke and end-to-end tests for ingest, analysis, transitions, and playback.
-- [ ] Improve diagnostics: actionable download/analysis errors and visible task progress.
-- [ ] Improve player resilience: recovery after refresh, predictable queue behavior, and graceful handling of missing media.
-- [ ] Improve library usability: saved playlists, queue editing, and clearer track/analysis states.
-- [ ] Evaluate transition quality with measurable criteria before changing the DSP engine.
-- [ ] Add security checks for URL validation, uploads, session isolation, and resource limits.
-- [ ] Document local setup and deployment with tested commands.
+The health endpoint is a **liveness** check; it does not claim that model downloads, audio analysis workers, or external source providers are all healthy.
 
-## Status
+## Run locally
 
-This repository has just been initialized. A roadmap item is not considered complete until code and tests have been committed.
+Follow the prerequisites and Windows setup steps in [UPSTREAM_README.md](UPSTREAM_README.md). In summary, the upstream project expects Python 3.11+, FFmpeg, Node.js 20+, and its documented PyTorch/torchaudio, Beat This!, and Demucs setup. Audio analysis may download model weights the first time.
 
-## Local development
+After installing dependencies, run from the repository root:
 
-The upstream project documents a Python 3.11+ environment, FFmpeg, Node.js 20+, PyTorch/torchaudio, Beat This!, and Demucs. Review upstream `README.md`, `requirements.txt`, `constraints.txt`, and `run.ps1` after importing the source tree. First-time model downloads and audio processing can require substantial disk, memory, and compute resources.
+```powershell
+.\run.ps1
+```
 
-## Legal and source policy
+The app defaults to `http://127.0.0.1:8765`; the liveness check is at `http://127.0.0.1:8765/health`.
 
-Use audio only where you have the right to access and process it. Respect platform terms, artists' rights, and source availability. Do not treat this app as a way to defeat DRM or other technical access restrictions.
+Run the health-route test with:
+
+```powershell
+.\.venv\Scripts\python.exe tools\test_health.py
+```
+
+## Development priorities
+
+1. Establish a reproducible smoke-test baseline and report failures clearly.
+2. Harden player/library recovery after refresh and transient source errors.
+3. Improve queue and analysis progress visibility.
+4. Add measured transition-quality evaluation before changing DSP behavior.
+5. Audit uploads, URL handling, session boundaries, resource limits, and deployment settings.
+
+Items above are plans, not claimed completed features. Changes should remain incremental and must not silently bypass platform terms, DRM, paywalls, or artists' rights.
