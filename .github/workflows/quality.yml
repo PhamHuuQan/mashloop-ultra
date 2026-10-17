@@ -1,0 +1,43 @@
+name: Static checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  syntax:
+    name: Python, browser JavaScript, and shell syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Compile Python source without importing model dependencies
+        run: python -m compileall -q loopbox tools
+
+      - name: Parse browser JavaScript as ES modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in web/js/*.js; do
+            node --input-type=module --check < "$file"
+          done
+          node --check web/vendor/signalsmith-stretch-1.3.2.mjs
+
+      - name: Check deployment shell scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in deploy/*.sh; do
+            bash -n "$file"
+          done
