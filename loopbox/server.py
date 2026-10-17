@@ -446,6 +446,19 @@ def transitions(tid: str, v: sessions.View = Depends(view_of)):
     return {"items": v.transitions(tid), "onward": v.onward(tid)}
 
 
+# Lightweight liveness probes for deployments. Keep these routes before the
+# catch-all static mount so they always return JSON instead of index.html.
+@app.get("/health")
+@app.get("/api/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "mashloop-ultra",
+        "version": "0.1.0",
+        "multiuser": MULTIUSER,
+    }
+
+
 app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
 
 
